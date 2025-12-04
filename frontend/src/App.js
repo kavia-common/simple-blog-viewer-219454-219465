@@ -1,48 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React, { useMemo, useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
+import './theme.css';
+import HomePage from './pages/HomePage';
+import PostDetailPage from './pages/PostDetailPage';
+import AppHeader from './components/AppHeader';
 
-// PUBLIC_INTERFACE
+/**
+ * PUBLIC_INTERFACE
+ * App
+ * The application root that sets up theme, routing and top-level layout.
+ */
 function App() {
   const [theme, setTheme] = useState('light');
 
-  // Effect to apply theme to document element
+  // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  // Toggle handler exposed to header
+  const toggleTheme = useMemo(
+    () => () => setTheme((t) => (t === 'light' ? 'dark' : 'light')),
+    []
+  );
+
+  // Read backend URL for future wiring; unused for now
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="app-root">
+        <AppHeader
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          backendUrl={backendUrl}
+        />
+        <main id="main-content" className="app-main" tabIndex="-1">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/post/:id" element={<PostDetailPage />} />
+          </Routes>
+        </main>
+        <footer className="app-footer" aria-label="Footer">
+          <div className="container">
+            <p className="footer-text">© {new Date().getFullYear()} Simple Blog · Ocean Professional Theme</p>
+          </div>
+        </footer>
+      </div>
+    </BrowserRouter>
   );
 }
 
